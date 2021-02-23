@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">GeoQuiz</string>
+    <string name="true_button">True</string>
+    <string name="false_button">False</string>
+    <string name="correct">Correct!</string>
+    <string name="incorrect">Incorrect!</string>
+    <string name="question_1">Q1: Brest is the best city in Belarus?</string>
+    <string name="question_2">Q2: Brest is a capital city in Belarus?</string>
+    <string name="question_3">Q3: добавляют ли в блины молоко?</string>
+    <string name="question_4">Q4: Минск - столица Украины?</string>
+    <string name="question_5">Q5: Небо голубое?</string>
+    <string name="question_6">Q6: На сфетофоре 5 цветов?</string>
+    <string name="question_7">Q7: Сахар солёный?</string>
+    <string name="question_8">Q8: В 1 см 10 мм?</string>
+    <string name="question_9">Q9: Миллион алых роз спел Киркоров 😅?</string>
+    <string name="next_button">Next</string>
+    <string name="prev_button">Prev</string>
+    <string name="correct_answers">You have answered %1$s correct!</string>
+</resources>
