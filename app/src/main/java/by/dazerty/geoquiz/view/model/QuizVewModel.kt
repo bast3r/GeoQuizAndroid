@@ -9,7 +9,7 @@ private const val TAG = "QuizViewModel"
 
 class QuizVewModel : ViewModel() {
 
-    private var questionBank = listOf<Question>(
+    private var questionBank = listOf(
         Question(R.string.question_1, true),
         Question(R.string.question_2, false),
         Question(R.string.question_3, true),
@@ -23,6 +23,7 @@ class QuizVewModel : ViewModel() {
 
     var currentQuestionId : Int = 0
     var correctAnswers : Int = 0
+    var isCheater = false
 
     val currentQuestionAnswer : Boolean
         get() = questionBank[currentQuestionId].answer

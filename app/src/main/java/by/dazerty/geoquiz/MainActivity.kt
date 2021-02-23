@@ -1,36 +1,36 @@
 package by.dazerty.geoquiz
 
-import androidx.appcompat.app.AppCompatActivity
+import android.app.Activity
+import android.app.ActivityOptions
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import by.dazerty.geoquiz.model.Question
-import androidx.core.app.ComponentActivity
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.os.PersistableBundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import by.dazerty.geoquiz.view.model.QuizVewModel
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var trueButton : Button
     private lateinit var falseButton: Button
-    private lateinit var prevButton : Button;
-    private lateinit var nextButton : Button;
+    private lateinit var prevButton : Button
+    private lateinit var nextButton : Button
+    private lateinit var cheatButton : Button
     private lateinit var questionText : TextView
 
     private val TAG : String = "MainActivity"
     private val CURRENT_QUEST_ID = "current_quest_id"
+    private val IS_CHEATER = "is_cheater"
+    private val REQUEST_CODE_CHEAT = 0
 
     private val quizVewModel : QuizVewModel by lazy {
-        ViewModelProviders.of(this).get(QuizVewModel::class.java)
+        ViewModelProvider(this).get(QuizVewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,27 +43,28 @@ class MainActivity : AppCompatActivity() {
 //        val quizVewModel = provider.get(QuizVewModel::class.java)
 //        Log.d(TAG, "created new viewmodel $quizVewModel")
 
-        val currentIndex = savedInstanceState?.getInt(CURRENT_QUEST_ID, 0) ?: 0
-        quizVewModel.currentQuestionId = currentIndex
+        quizVewModel.currentQuestionId = savedInstanceState?.getInt(CURRENT_QUEST_ID, 0) ?: 0
+        quizVewModel.isCheater = savedInstanceState?.getBoolean(IS_CHEATER, false) ?: false
 
         trueButton = findViewById(R.id.true_button)
         falseButton = findViewById(R.id.false_button)
         nextButton = findViewById(R.id.next_button)
         prevButton = findViewById(R.id.prev_button)
+        cheatButton = findViewById(R.id.cheat_button)
         questionText = findViewById(R.id.question_textView)
 
         trueButton.setOnClickListener { view: View ->
             println("click truebutton")
             checkAnswer(true)
-            trueButton.setEnabled(false)
-            falseButton.setEnabled(false)
+            trueButton.isEnabled = false
+            falseButton.isEnabled = false
         }
 
         falseButton.setOnClickListener { view : View ->
             println("click falsebutton")
             checkAnswer(false)
-            trueButton.setEnabled(false)
-            falseButton.setEnabled(false)
+            trueButton.isEnabled = false
+            falseButton.isEnabled = false
         }
 
         prevButton.setOnClickListener {view : View ->
@@ -76,13 +77,41 @@ class MainActivity : AppCompatActivity() {
             updateQuestion()
         }
 
+        cheatButton.setOnClickListener {view : View ->
+            println("Cheat button click!")
+//            val intent = Intent(this, CheatActivity::class.java)
+            val answerIsTrue = quizVewModel.currentQuestionAnswer
+            val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+
+            //проверка подходящей версии сдк для использования фичи
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val options = ActivityOptions.makeClipRevealAnimation(view, 0, 0, view.width, view.height)
+                startActivityForResult(intent, REQUEST_CODE_CHEAT, options.toBundle())
+            } else {
+                startActivityForResult(intent, REQUEST_CODE_CHEAT)
+            }
+        }
+
         updateQuestion()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode != Activity.RESULT_OK) {
+            return
+        }
+
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            quizVewModel.isCheater = data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
         Log.d(TAG, "onSaveInstanceState")
         outState.putInt(CURRENT_QUEST_ID, quizVewModel.currentQuestionId)
+        outState.putBoolean(IS_CHEATER, quizVewModel.isCheater)
     }
 
     override fun onStart() {
@@ -112,18 +141,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkAnswer(answer : Boolean) {
         val correctAnswer : Boolean = quizVewModel.currentQuestionAnswer
-        var toast : Int
-        if (answer == correctAnswer) {
-            toast = R.string.correct
-            quizVewModel.increaseCorrectAnswers()
-        } else {
-            toast = R.string.incorrect
+        val toast : Int
+//        if (answer == correctAnswer) {
+//            toast = R.string.correct
+//            quizVewModel.increaseCorrectAnswers()
+//        } else {
+//            toast = R.string.incorrect
+//        }
+        toast = when {
+            quizVewModel.isCheater -> R.string.judgement_toast
+            answer == correctAnswer -> R.string.correct
+            else -> R.string.incorrect
         }
 
         Toast.makeText(this, toast, Toast.LENGTH_SHORT).show()
 
-        val res = resources
-        var congrat : String = String.format(resources.getString(R.string.correct_answers), quizVewModel.correctAnswers)
+        val congrat : String = String.format(resources.getString(R.string.correct_answers), quizVewModel.correctAnswers)
         if (quizVewModel.lastAnswer()) {
             Toast.makeText(this, congrat, Toast.LENGTH_SHORT).show()
         }
@@ -132,9 +165,10 @@ class MainActivity : AppCompatActivity() {
     private fun updateQuestion() {
         val question : Int = quizVewModel.currentAnwerText
         questionText.setText(question)
+        quizVewModel.isCheater = false
 
-        trueButton.setEnabled(true)
-        falseButton.setEnabled(true)
+        trueButton.isEnabled = true
+        falseButton.isEnabled = true
     }
 
 }

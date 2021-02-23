@@ -16,4 +16,8 @@
     <string name="next_button">Next</string>
     <string name="prev_button">Prev</string>
     <string name="correct_answers">You have answered %1$s correct!</string>
+    <string name="warning_text">Are you sure you want to do this?</string>
+    <string name="show_answer_button">Show answer</string>
+    <string name="cheat_button">Cheat!</string>
+    <string name="judgement_toast">Cheating is wrong.</string>
 </resources>
