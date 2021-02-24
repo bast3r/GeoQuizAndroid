@@ -21,6 +21,8 @@ class QuizVewModel : ViewModel() {
         Question(R.string.question_9, false)
     )
 
+    private var answeredQuestions : MutableSet<Int> = mutableSetOf()
+
     var currentQuestionId : Int = 0
     var correctAnswers : Int = 0
     var isCheater = false
@@ -41,12 +43,20 @@ class QuizVewModel : ViewModel() {
             currentQuestionId = questionBank.size - 1
     }
 
+    fun showButtonsIfNoAnswers() : Boolean {
+        return !answeredQuestions.contains(currentQuestionId)
+    }
+
+    fun addAnsweredQuestion() {
+        answeredQuestions.add(currentQuestionId)
+    }
+
     fun increaseCorrectAnswers() {
         correctAnswers++
     }
 
     fun lastAnswer(): Boolean {
-        return currentQuestionId == questionBank.size - 1
+        return answeredQuestions.size == questionBank.size
     }
 
     init {
@@ -56,5 +66,10 @@ class QuizVewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "QuizVewModel about to be destroyed")
+    }
+
+    //clear answers for the new start
+    fun clearAnswers() {
+        answeredQuestions.clear()
     }
 }

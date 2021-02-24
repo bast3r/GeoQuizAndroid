@@ -3,6 +3,7 @@ package by.dazerty.geoquiz
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
@@ -32,6 +33,8 @@ class CheatActivity : AppCompatActivity() {
             answerTextView.setText(answer)
             setAnswerShownResult(true)
         }
+
+        findViewById<TextView>(R.id.version_text_view).setText("Andoid SDK version " + Build.VERSION.SDK_INT)
     }
 
     private fun setAnswerShownResult(isAswerShown: Boolean) {

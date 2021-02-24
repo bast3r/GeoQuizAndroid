@@ -5,7 +5,6 @@ import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -38,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         Log.d(TAG, "onCreate")
+        Log.d(TAG, "created new viewmodel $quizVewModel")
 
 //        val provider : ViewModelProvider = ViewModelProviders.of(this)
 //        val quizVewModel = provider.get(QuizVewModel::class.java)
@@ -56,15 +56,11 @@ class MainActivity : AppCompatActivity() {
         trueButton.setOnClickListener { view: View ->
             println("click truebutton")
             checkAnswer(true)
-            trueButton.isEnabled = false
-            falseButton.isEnabled = false
         }
 
         falseButton.setOnClickListener { view : View ->
             println("click falsebutton")
             checkAnswer(false)
-            trueButton.isEnabled = false
-            falseButton.isEnabled = false
         }
 
         prevButton.setOnClickListener {view : View ->
@@ -79,8 +75,8 @@ class MainActivity : AppCompatActivity() {
 
         cheatButton.setOnClickListener {view : View ->
             println("Cheat button click!")
-//            val intent = Intent(this, CheatActivity::class.java)
             val answerIsTrue = quizVewModel.currentQuestionAnswer
+            //explicit call
             val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
 
             //проверка подходящей версии сдк для использования фичи
@@ -94,7 +90,7 @@ class MainActivity : AppCompatActivity() {
 
         updateQuestion()
     }
-
+//waiting for result from the second activity
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -107,8 +103,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
-        super.onSaveInstanceState(outState, outPersistentState)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
         Log.d(TAG, "onSaveInstanceState")
         outState.putInt(CURRENT_QUEST_ID, quizVewModel.currentQuestionId)
         outState.putBoolean(IS_CHEATER, quizVewModel.isCheater)
@@ -142,33 +138,39 @@ class MainActivity : AppCompatActivity() {
     private fun checkAnswer(answer : Boolean) {
         val correctAnswer : Boolean = quizVewModel.currentQuestionAnswer
         val toast : Int
-//        if (answer == correctAnswer) {
-//            toast = R.string.correct
-//            quizVewModel.increaseCorrectAnswers()
-//        } else {
-//            toast = R.string.incorrect
-//        }
+
         toast = when {
             quizVewModel.isCheater -> R.string.judgement_toast
             answer == correctAnswer -> R.string.correct
             else -> R.string.incorrect
         }
 
+        quizVewModel.addAnsweredQuestion()
+        if (answer == correctAnswer) {
+            quizVewModel.increaseCorrectAnswers()
+        }
+
         Toast.makeText(this, toast, Toast.LENGTH_SHORT).show()
+
+        trueButton.isEnabled = quizVewModel.showButtonsIfNoAnswers()
+        falseButton.isEnabled = quizVewModel.showButtonsIfNoAnswers()
 
         val congrat : String = String.format(resources.getString(R.string.correct_answers), quizVewModel.correctAnswers)
         if (quizVewModel.lastAnswer()) {
             Toast.makeText(this, congrat, Toast.LENGTH_SHORT).show()
+            quizVewModel.clearAnswers()
         }
     }
 
     private fun updateQuestion() {
         val question : Int = quizVewModel.currentAnwerText
         questionText.setText(question)
-        quizVewModel.isCheater = false
 
-        trueButton.isEnabled = true
-        falseButton.isEnabled = true
+//        trueButton.isEnabled = true
+//        falseButton.isEnabled = true
+
+        trueButton.isEnabled = quizVewModel.showButtonsIfNoAnswers()
+        falseButton.isEnabled = quizVewModel.showButtonsIfNoAnswers()
     }
 
 }
