@@ -26,6 +26,15 @@ class QuizVewModel : ViewModel() {
     var currentQuestionId : Int = 0
     var correctAnswers : Int = 0
     var isCheater = false
+    var attemtps = 3
+
+    fun minusAttempts() {
+        attemtps--
+    }
+
+    fun currentAttempts() : Int {
+        return attemtps
+    }
 
     val currentQuestionAnswer : Boolean
         get() = questionBank[currentQuestionId].answer

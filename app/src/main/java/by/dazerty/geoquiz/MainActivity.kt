@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
             println("Cheat button click!")
             val answerIsTrue = quizVewModel.currentQuestionAnswer
             //explicit call
-            val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+            val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue, quizVewModel.currentAttempts())
 
             //проверка подходящей версии сдк для использования фичи
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -100,6 +100,7 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == REQUEST_CODE_CHEAT) {
             quizVewModel.isCheater = data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+            quizVewModel.attemtps = data?.getIntExtra(EXTRA_ATTEMPTS, 0) ?: 0
         }
     }
 
